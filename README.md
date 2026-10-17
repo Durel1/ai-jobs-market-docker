@@ -11,7 +11,7 @@ connectée à une base MongoDB ou MySQL et déployée avec Docker Compose.
 
 - Python
 - Streamlit
-- MongoDB ou MySQL — choix à justifier
+- MongoDB — stockage des offres et de leurs compétences
 - Docker et Docker Compose
 - Git
 
@@ -37,3 +37,8 @@ connectée à une base MongoDB ou MySQL et déployée avec Docker Compose.
 
 Le CSV original est conservé sans modification afin de garantir
 la reproductibilité des traitements.
+
+## Modèle de données
+
+Le choix de MongoDB, la structure des documents et la stratégie
+d'import sont décrits dans [database/modele.md](database/modele.md).
