@@ -46,3 +46,57 @@ def charger_options_filtres():
         champ: sorted(collection.distinct(champ))
         for champ in champs
     }
+
+
+def charger_agregations(filtres=None):
+    client = obtenir_client()
+    collection = client[os.environ["MONGO_DATABASE"]]["jobs"]
+
+    def salaires_par(champ):
+        return [
+            {
+                "$group": {
+                    "_id": f"${champ}",
+                    "salaire_moyen": {"$avg": "$annual_salary_usd"},
+                    "effectif": {"$sum": 1},
+                }
+            },
+            {"$sort": {"salaire_moyen": -1, "_id": 1}},
+        ]
+
+    pipeline = [
+        {"$match": filtres or {}},
+        {
+            "$facet": {
+                "metiers": salaires_par("job_title") + [
+                    {"$limit": 10}
+                ],
+                "pays": [
+                    {"$match": {"country": {"$ne": "Global"}}}
+                ] + salaires_par("country"),
+                "experience": salaires_par("experience_level"),
+                "teletravail": [
+                    {
+                        "$group": {
+                            "_id": "$remote_work",
+                            "effectif": {"$sum": 1},
+                        }
+                    },
+                    {"$sort": {"effectif": -1, "_id": 1}},
+                ],
+                "competences": [
+                    {"$unwind": "$required_skills"},
+                    {
+                        "$group": {
+                            "_id": "$required_skills",
+                            "effectif": {"$sum": 1},
+                        }
+                    },
+                    {"$sort": {"effectif": -1, "_id": 1}},
+                    {"$limit": 15},
+                ],
+            }
+        },
+    ]
+
+    return next(collection.aggregate(pipeline))

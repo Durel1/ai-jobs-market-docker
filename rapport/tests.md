@@ -84,3 +84,21 @@ La combinaison France + Fully Remote a été vérifiée :
 Les résultats correspondent au calcul indépendant sur le CSV original.
 Le bouton de réinitialisation efface les sélections et rétablit
 les 1 500 offres du dataset.
+
+## Visualisations et agrégations MongoDB
+
+Cinq graphiques sont disponibles :
+- Salaires moyens par métier : les 10 premiers.
+- Salaires moyens par pays, hors catégorie Global.
+- Salaires moyens par niveau d'expérience déclaré.
+- Répartition des offres par mode de travail.
+- Les 15 compétences les plus présentes.
+
+Les résultats sont calculés dans MongoDB après application des filtres.
+
+Contrôles réalisés :
+- France + Fully Remote : 26 offres et une seule catégorie de télétravail.
+- Salaire moyen France + Fully Remote : environ 194 938 USD.
+- Sans filtre : 686 offres Hybrid, 445 Fully Remote et 369 On-site.
+- Sans filtre : Python apparaît dans 942 offres, SQL dans 422 et Cloud dans 402.
+- Les infobulles des salaires présentent les moyennes et les effectifs.

@@ -4,8 +4,14 @@ from statistics import mean, median
 import streamlit as st
 from pymongo.errors import PyMongoError
 
-from db import charger_offres, charger_options_filtres
+from db import (
+    charger_offres,
+    charger_options_filtres,
+    charger_agregations,
+)
+
 from filtres import afficher_filtres
+from graphiques import afficher_graphiques
 
 
 LOGGER = logging.getLogger(__name__)
@@ -42,6 +48,7 @@ def main():
         options = charger_options_filtres()
         filtres = afficher_filtres(options)
         offres = charger_offres(filtres)
+        agregations = charger_agregations(filtres)
     except (PyMongoError, KeyError):
         LOGGER.exception("Échec du chargement des offres")
         st.error(
@@ -114,6 +121,7 @@ def main():
             "Les salaires sont exprimés en dollars américains par an. "
             "Le score de demande est celui fourni par le dataset."
         )
+    afficher_graphiques(agregations)
 
 
 if __name__ == "__main__":
