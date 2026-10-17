@@ -1,11 +1,173 @@
 import csv
 from collections import Counter
 from pathlib import Path
+import math
 
 
 # Retrouver le CSV indépendamment du dossier depuis lequel le script est lancé.
 RACINE_PROJET = Path(__file__).resolve().parent.parent
 CHEMIN_CSV = RACINE_PROJET / "data" / "ai_jobs_market_2025_2026.csv"
+
+
+def verifier_coherence(lignes):
+    # Type attendu pour chaque colonne numérique.
+    types_numeriques = {
+        "years_of_experience": int,
+        "annual_salary_usd": float,
+        "salary_min_usd": float,
+        "salary_max_usd": float,
+        "ai_salary_premium_pct": float,
+        "demand_score": float,
+        "demand_growth_yoy_pct": float,
+        "benefits_score_10": float,
+        "posting_year": int,
+        "posting_month": int,
+        "is_senior": int,
+        "is_remote_friendly": int,
+        "is_llm_role": int,
+    }
+
+    donnees_converties = []
+    erreurs_types = []
+
+    for ligne in lignes:
+        offre = dict(ligne)
+        ligne_valide = True
+
+        for colonne, conversion in types_numeriques.items():
+            try:
+                valeur = conversion(ligne[colonne])
+
+                if not math.isfinite(valeur):
+                    raise ValueError("Valeur non finie")
+
+                offre[colonne] = valeur
+
+            except (ValueError, TypeError, OverflowError):
+                erreurs_types.append(
+                    (ligne["job_id"], colonne, ligne[colonne])
+                )
+                ligne_valide = False
+
+        if ligne_valide:
+            donnees_converties.append(offre)
+
+    print("\n=== TYPES NUMÉRIQUES ===")
+    print(f"Cellules numériques invalides : {len(erreurs_types)}")
+    for erreur in erreurs_types[:5]:
+        print(f"  Identifiant, colonne, valeur : {erreur}")
+
+    # Une ligne avec erreur de type est exclue uniquement des contrôles
+    # numériques suivants. Elle reste présente dans le CSV original.
+    print(
+        "Offres utilisables pour les contrôles numériques : "
+        f"{len(donnees_converties)} / {len(lignes)}"
+    )
+
+    print("\n=== ÉTENDUE DES VALEURS NUMÉRIQUES ===")
+    if not donnees_converties:
+        print("Aucune offre utilisable.")
+        return
+
+    for colonne in types_numeriques:
+        valeurs = [offre[colonne] for offre in donnees_converties]
+        print(f"{colonne} : min={min(valeurs)}, max={max(valeurs)}")
+
+    niveaux_experience = {
+        "Entry (0-2 yrs)": (0, 2),
+        "Mid (3-5 yrs)": (3, 5),
+        "Senior (6-9 yrs)": (6, 9),
+        "Lead (10+ yrs)": (10, math.inf),
+    }
+
+    anomalies = {
+        "Salaire ou borne de salaire non positif": [],
+        "Salaire minimum supérieur au maximum": [],
+        "Salaire annuel hors de la fourchette": [],
+        "Années d'expérience négatives": [],
+        "Niveau d'expérience inconnu": [],
+        "Années incompatibles avec le niveau affiché": [],
+        "Mois hors de 1 à 12": [],
+        "Année hors de 2025 et 2026": [],
+        "Score d'avantages hors de 0 à 10": [],
+        "Indicateur binaire différent de 0 ou 1": [],
+        "Mode de travail inconnu": [],
+        "Indicateur de télétravail incohérent": [],
+    }
+
+    for offre in donnees_converties:
+        identifiant = offre["job_id"]
+
+        def signaler(libelle, condition):
+            if condition:
+                anomalies[libelle].append(identifiant)
+
+        salaire = offre["annual_salary_usd"]
+        minimum = offre["salary_min_usd"]
+        maximum = offre["salary_max_usd"]
+
+        signaler(
+            "Salaire ou borne de salaire non positif",
+            min(salaire, minimum, maximum) <= 0,
+        )
+        signaler(
+            "Salaire minimum supérieur au maximum",
+            minimum > maximum,
+        )
+        signaler(
+            "Salaire annuel hors de la fourchette",
+            not minimum <= salaire <= maximum,
+        )
+
+        experience = offre["years_of_experience"]
+        niveau = offre["experience_level"]
+        signaler("Années d'expérience négatives", experience < 0)
+        signaler(
+            "Niveau d'expérience inconnu",
+            niveau not in niveaux_experience,
+        )
+
+        if niveau in niveaux_experience:
+            borne_min, borne_max = niveaux_experience[niveau]
+            signaler(
+                "Années incompatibles avec le niveau affiché",
+                not borne_min <= experience <= borne_max,
+            )
+
+        signaler("Mois hors de 1 à 12", not 1 <= offre["posting_month"] <= 12)
+        signaler(
+            "Année hors de 2025 et 2026",
+            offre["posting_year"] not in (2025, 2026),
+        )
+        signaler(
+            "Score d'avantages hors de 0 à 10",
+            not 0 <= offre["benefits_score_10"] <= 10,
+        )
+        signaler(
+            "Indicateur binaire différent de 0 ou 1",
+            any(
+                offre[colonne] not in (0, 1)
+                for colonne in [
+                    "is_senior", "is_remote_friendly", "is_llm_role"
+                ]
+            ),
+        )
+
+        mode = offre["remote_work"]
+        modes_attendus = {"On-site": 0, "Hybrid": 1, "Fully Remote": 1}
+        signaler("Mode de travail inconnu", mode not in modes_attendus)
+
+        if mode in modes_attendus:
+            signaler(
+                "Indicateur de télétravail incohérent",
+                offre["is_remote_friendly"] != modes_attendus[mode],
+            )
+
+    print("\n=== CONTRÔLES DE COHÉRENCE ===")
+    for libelle, identifiants in anomalies.items():
+        print(f"{libelle} : {len(identifiants)}")
+        if identifiants:
+            print(f"  Exemples : {', '.join(identifiants[:5])}")
 
 
 def main():
@@ -76,6 +238,7 @@ def main():
     ]
     print(f"Valeur originale : {valeur_originale}")
     print(f"Liste obtenue : {competences}")
+    verifier_coherence(lignes)
 
 
 if __name__ == "__main__":
