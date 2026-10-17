@@ -4,7 +4,8 @@ from statistics import mean, median
 import streamlit as st
 from pymongo.errors import PyMongoError
 
-from db import charger_offres
+from db import charger_offres, charger_options_filtres
+from filtres import afficher_filtres
 
 
 LOGGER = logging.getLogger(__name__)
@@ -38,7 +39,9 @@ def main():
     st.button("Actualiser les données")
 
     try:
-        offres = charger_offres()
+        options = charger_options_filtres()
+        filtres = afficher_filtres(options)
+        offres = charger_offres(filtres)
     except (PyMongoError, KeyError):
         LOGGER.exception("Échec du chargement des offres")
         st.error(
@@ -48,13 +51,25 @@ def main():
         st.stop()
 
     if not offres:
-        st.warning("Aucune offre disponible. Les données doivent être importées.")
+        if filtres:
+            st.warning(
+                "Aucune offre ne correspond à cette combinaison. "
+                "Modifiez ou réinitialisez les filtres."
+            )
+        else:
+            st.warning(
+                "Aucune offre disponible. Les données doivent être importées."
+            )
         st.stop()
 
     salaires = [offre["annual_salary_usd"] for offre in offres]
     scores_demande = [offre["demand_score"] for offre in offres]
 
-    st.subheader("Vue d'ensemble")
+    st.subheader("Résultats de la sélection")
+    st.caption(
+        "Les indicateurs et les informations de qualité portent "
+        "sur les offres correspondant aux filtres."
+    )
 
     colonne1, colonne2, colonne3, colonne4 = st.columns(4)
 

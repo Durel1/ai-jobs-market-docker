@@ -28,3 +28,21 @@ def charger_offres(filtres=None):
             {"_id": 0},
         )
     )
+
+
+def charger_options_filtres():
+    client = obtenir_client()
+    collection = client[os.environ["MONGO_DATABASE"]]["jobs"]
+
+    champs = [
+        "country",
+        "experience_level",
+        "industry",
+        "remote_work",
+        "job_title",
+    ]
+
+    return {
+        champ: sorted(collection.distinct(champ))
+        for champ in champs
+    }

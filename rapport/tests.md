@@ -68,3 +68,19 @@ Valeurs observées :
 
 Les quatre indicateurs correspondent aux valeurs calculées
 indépendamment sur le CSV original.
+
+
+## Filtres interactifs
+
+Les cinq filtres sont présents :
+pays, niveau d'expérience, secteur, mode de travail et métier.
+
+La combinaison France + Fully Remote a été vérifiée :
+- 26 offres.
+- Salaire annuel moyen : 194 938 USD.
+- Salaire annuel médian : 175 000 USD.
+- Score moyen de demande : 88,54.
+
+Les résultats correspondent au calcul indépendant sur le CSV original.
+Le bouton de réinitialisation efface les sélections et rétablit
+les 1 500 offres du dataset.
