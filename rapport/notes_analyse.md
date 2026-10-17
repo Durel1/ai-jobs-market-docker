@@ -59,3 +59,39 @@ Les analyses distingueront le niveau d'expérience déclaré du nombre
 d'années demandé. Les limites du dataset seront signalées dans le dashboard.
 
 À ce stade, aucune donnée du CSV original n'a été modifiée.
+
+## Contrôle des textes et des compétences
+
+Aucun espace en début ou fin des champs textuels contrôlés.
+Aucune variante de casse ou d'espacement détectée.
+Aucun élément vide dans les listes de compétences.
+
+Le dataset contient 93 libellés distincts de compétences.
+119 offres contiennent des compétences répétées.
+
+## Préparation reproductible
+
+Commande :
+python scripts/preparer_donnees.py
+
+Fichier produit :
+data/processed/ai_jobs_prepared.json
+
+Transformations :
+- Conversion des champs numériques en entiers ou nombres décimaux.
+- Conversion des indicateurs binaires en booléens.
+- Transformation de required_skills en liste.
+- Suppression des compétences répétées à l'identique dans chaque offre,
+  en conservant leur ordre.
+- Ajout de salary_outside_range et experience_mismatch.
+
+Résultats :
+- 1 500 offres en entrée et en sortie.
+- 120 répétitions supprimées dans 119 offres.
+- 288 offres signalées pour salaire hors fourchette.
+- 1 099 offres signalées pour incohérence d'expérience.
+- Aucune offre supprimée.
+- Aucune valeur salariale ou d'expérience corrigée.
+
+Le CSV original reste inchangé.
+Le JSON généré est exclu de Git et peut être reconstruit avec le script.

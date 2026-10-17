@@ -18,3 +18,6 @@ __pycache__/
 *.log
 Thumbs.db
 .DS_Store
+
+# Données préparées, régénérables depuis le CSV et le script
+data/processed/

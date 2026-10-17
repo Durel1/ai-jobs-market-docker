@@ -169,6 +169,117 @@ def verifier_coherence(lignes):
         if identifiants:
             print(f"  Exemples : {', '.join(identifiants[:5])}")
 
+def verifier_textes_et_competences(lignes):
+    colonnes_texte = [
+        "job_id",
+        "job_title",
+        "job_category",
+        "experience_level",
+        "education_required",
+        "city",
+        "country",
+        "remote_work",
+        "company_size",
+        "industry",
+        "salary_tier",
+    ]
+
+    print("\n=== ESPACES EN DÉBUT OU FIN DE TEXTE ===")
+    for colonne in colonnes_texte:
+        identifiants = [
+            ligne["job_id"]
+            for ligne in lignes
+            if ligne[colonne] != ligne[colonne].strip()
+        ]
+        print(f"{colonne} : {len(identifiants)}")
+
+    print("\n=== VARIANTES DE CASSE OU D'ESPACEMENT ===")
+    for colonne in colonnes_texte:
+        variantes = {}
+
+        for ligne in lignes:
+            valeur = ligne[colonne]
+            # Clé de comparaison uniquement : aucune donnée modifiée.
+            cle = " ".join(valeur.split()).casefold()
+            variantes.setdefault(cle, set()).add(valeur)
+
+        groupes = [
+            sorted(valeurs)
+            for valeurs in variantes.values()
+            if len(valeurs) > 1
+        ]
+
+        print(f"{colonne} : {len(groupes)} groupe(s)")
+        for groupe in groupes[:5]:
+            print(f"  {groupe}")
+
+    print("\n=== FORMAT DES COMPÉTENCES ===")
+    offres_avec_element_vide = []
+    offres_avec_espaces = []
+    offres_avec_doublons = []
+    variantes_competences = {}
+    frequences = Counter()
+    nombres_competences = []
+
+    for ligne in lignes:
+        elements = ligne["required_skills"].split("|")
+        competences = [
+            element.strip()
+            for element in elements
+            if element.strip()
+        ]
+
+        if any(not element.strip() for element in elements):
+            offres_avec_element_vide.append(ligne["job_id"])
+
+        if any(element != element.strip() for element in elements):
+            offres_avec_espaces.append(ligne["job_id"])
+
+        cles = [
+            " ".join(competence.split()).casefold()
+            for competence in competences
+        ]
+
+        if len(cles) != len(set(cles)):
+            offres_avec_doublons.append(ligne["job_id"])
+
+        for competence, cle in zip(competences, cles):
+            variantes_competences.setdefault(cle, set()).add(competence)
+
+        # Une compétence compte au maximum une fois par offre.
+        frequences.update(set(competences))
+        nombres_competences.append(len(competences))
+
+    print(f"Offres avec élément vide : {len(offres_avec_element_vide)}")
+    print(f"Offres avec espaces superflus : {len(offres_avec_espaces)}")
+    print(f"Offres avec compétences répétées : {len(offres_avec_doublons)}")
+    print(f"Nombre de libellés distincts après strip : {len(frequences)}")
+    print(
+        "Nombre de compétences par offre : "
+        f"min={min(nombres_competences)}, "
+        f"max={max(nombres_competences)}"
+    )
+
+    print("\nVariantes de compétences à examiner :")
+    groupes = [
+        sorted(valeurs)
+        for valeurs in variantes_competences.values()
+        if len(valeurs) > 1
+    ]
+    if not groupes:
+        print("  Aucune variante de casse ou d'espacement détectée.")
+    else:
+        for groupe in groupes:
+            print(f"  {groupe}")
+
+    print("\nLes 15 compétences les plus présentes :")
+    classement = sorted(
+        frequences.items(),
+        key=lambda element: (-element[1], element[0]),
+    )
+    for competence, nombre in classement[:15]:
+        print(f"  {competence} : {nombre} offres")
+
 
 def main():
     if not CHEMIN_CSV.is_file():
@@ -239,6 +350,7 @@ def main():
     print(f"Valeur originale : {valeur_originale}")
     print(f"Liste obtenue : {competences}")
     verifier_coherence(lignes)
+    verifier_textes_et_competences(lignes)
 
 
 if __name__ == "__main__":
