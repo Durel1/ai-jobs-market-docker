@@ -26,3 +26,14 @@ connectée à une base MongoDB ou MySQL et déployée avec Docker Compose.
 - [ ] Conteneurisation et orchestration
 - [ ] Dashboard et analyses
 - [ ] Tests et documentation
+
+## Organisation du projet
+
+- data/ : dataset original et éventuelles données nettoyées.
+- app/ : application Streamlit et configuration de son image Docker.
+- scripts/ : analyse et préparation des données.
+- database/ : initialisation et import en base de données.
+- rapport/ : notes, preuves de tests et rapport final.
+
+Le CSV original est conservé sans modification afin de garantir
+la reproductibilité des traitements.
