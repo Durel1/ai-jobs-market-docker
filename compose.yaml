@@ -55,6 +55,40 @@ services:
     networks:
       - ai_jobs_network
 
+  app:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+
+    restart: unless-stopped
+
+    ports:
+      - "127.0.0.1:8501:8501"
+
+    environment:
+      MONGO_HOST: mongodb
+      MONGO_DATABASE: ai_jobs
+      MONGO_USERNAME: "${MONGO_APP_USERNAME:?Compte application manquant}"
+      MONGO_PASSWORD: "${MONGO_APP_PASSWORD:?Mot de passe application manquant}"
+
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+    networks:
+      - ai_jobs_network
+
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8501/_stcore/health', timeout=3).read()"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
 volumes:
   mongo_data:
 

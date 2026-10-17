@@ -113,3 +113,22 @@ Le script relit les documents importés et compare leur contenu aux
 données préparées.
 
 L'import ne supprime pas les documents absents du fichier source.
+
+## Démarrer l'application Streamlit
+
+Après l'import des données :
+
+```bash
+docker compose up -d --build app
+docker compose ps
+```
+
+Ouvrir http://localhost:8501.
+
+L'application utilise le compte MongoDB de lecture et affiche :
+- le nombre d'offres ;
+- le salaire annuel moyen ;
+- le salaire annuel médian ;
+- le score moyen de demande.
+
+Le bouton d'actualisation déclenche une nouvelle lecture des données.

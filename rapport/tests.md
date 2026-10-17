@@ -52,3 +52,19 @@ lors du réimport.
 - Communication Streamlit–MongoDB.
 - Fonctionnement des filtres, KPI et graphiques.
 - Reconstruction complète selon le README.
+
+## Première page Streamlit
+
+L'image applicative a été construite et la page est accessible
+sur http://localhost:8501.
+
+Les données sont récupérées depuis MongoDB avec le compte de lecture.
+
+Valeurs observées :
+- Nombre d'offres : 1 500.
+- Salaire annuel moyen : 194 892 USD.
+- Salaire annuel médian : 180 000 USD.
+- Score moyen de demande : 87,52.
+
+Les quatre indicateurs correspondent aux valeurs calculées
+indépendamment sur le CSV original.
