@@ -12,6 +12,7 @@ from db import (
 
 from filtres import afficher_filtres
 from graphiques import afficher_graphiques
+from analyses import afficher_analyses
 
 
 LOGGER = logging.getLogger(__name__)
@@ -122,6 +123,7 @@ def main():
             "Le score de demande est celui fourni par le dataset."
         )
     afficher_graphiques(agregations)
+    afficher_analyses(offres)
 
 
 if __name__ == "__main__":

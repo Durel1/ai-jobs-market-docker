@@ -102,3 +102,62 @@ Contrôles réalisés :
 - Sans filtre : 686 offres Hybrid, 445 Fully Remote et 369 On-site.
 - Sans filtre : Python apparaît dans 942 offres, SQL dans 422 et Cloud dans 402.
 - Les infobulles des salaires présentent les moyennes et les effectifs.
+
+
+## Analyses complémentaires
+
+### Comparaison LLM à pays et niveau déclaré comparables
+
+Sans filtre :
+- 22 groupes retenus, représentant 881 offres.
+- Chaque groupe contient au moins 5 offres de chaque catégorie.
+- Salaire LLM moyen standardisé : 217 766 USD.
+- Salaire des autres rôles standardisé : 202 010 USD.
+- Écart : environ 15 757 USD, soit 7,80 %.
+
+Les deux moyennes utilisent les mêmes poids par groupe.
+La comparaison est descriptive et ne démontre pas un effet causal.
+
+### Sensibilité aux incohérences salariales
+
+Sans filtre :
+- Moyenne sur les 1 500 offres : 194 892 USD.
+- Moyenne sur les 1 212 offres dont le salaire est dans la fourchette :
+  environ 172 368 USD.
+- Variation : environ -22 524 USD, soit -11,56 %.
+
+L'exclusion concerne uniquement cette comparaison.
+Elle ne garantit pas une meilleure représentation du marché.
+Les données originales et les indicateurs principaux restent inchangés.
+
+Les résultats affichés correspondent aux calculs indépendants
+effectués depuis le CSV original.
+
+
+## Cas limites et reprise après indisponibilité
+
+### Sélection sans résultat
+
+Filtres : France, Lead (10+ yrs), AI Agent Developer.
+
+Résultat : message d'absence de résultat, sans anciens KPI ni graphiques.
+La réinitialisation rétablit les 1 500 offres.
+
+### Données insuffisantes pour la comparaison LLM
+
+Filtres : France et Fully Remote.
+
+Résultat : 26 offres affichées. La comparaison LLM indique qu'aucun
+groupe ne satisfait le seuil de cinq offres par catégorie.
+Les autres résultats restent accessibles.
+
+### Indisponibilité de MongoDB
+
+Après docker compose stop mongodb et actualisation de la page,
+l'application affiche un message d'indisponibilité des données.
+
+### Reprise
+
+Après docker compose start mongodb et actualisation de la page,
+les 1 500 offres et les indicateurs réapparaissent sans réimport
+ni reconstruction d'image.
