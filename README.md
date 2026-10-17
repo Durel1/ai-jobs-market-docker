@@ -194,3 +194,12 @@ Les analyses sont descriptives et ne démontrent pas de causalité.
 
 Le modèle est détaillé dans [database/modele.md](database/modele.md).
 Les tests sont documentés dans [rapport/tests.md](rapport/tests.md).
+
+## Rapport final
+
+- [Rapport PDF de 20 pages](rapport/Rapport_Projet_Docker_4A.pdf)
+- [Source Markdown du rapport](rapport/Rapport_Projet_Docker_4A.md)
+- [Vérification finale](rapport/verification_finale.md)
+
+Réalisation individuelle : Kenfack Durel, ESIEA, 4A, 2026-2027.
+Cours : Virtualisation et conteneurisation. Enseignant : Mr. TRAORE.

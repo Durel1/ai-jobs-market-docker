@@ -1,0 +1,2 @@
+SHA-256 du CSV original
+0b4a85c42e2f3df20e72c8727e011600c877d49d6a9ce9728dab0570ebec5418  data/ai_jobs_market_2025_2026.csv

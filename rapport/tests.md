@@ -45,13 +45,12 @@ Le réimport signalait 1 500 modifications malgré des valeurs identiques.
 Placer _id en première position a permis d'obtenir 0 modification
 lors du réimport.
 
-## Tests restant à compléter
+## État de la validation finale
 
-- Preuve de persistance après recréation du conteneur sans réimport.
-- Construction et démarrage de Streamlit.
-- Communication Streamlit–MongoDB.
-- Fonctionnement des filtres, KPI et graphiques.
-- Reconstruction complète selon le README.
+Les contrôles de construction, démarrage, lecture MongoDB, filtres,
+réimport et reconstruction sont documentés ci-dessous.
+La persistance a aussi été confirmée par la reprise des 1 500 offres
+après arrêt puis redémarrage de MongoDB, sans réimport.
 
 ## Première page Streamlit
 
