@@ -1,0 +1,35 @@
+name: ai-jobs-market
+
+services:
+  mongodb:
+    image: mongo:8.0
+    restart: unless-stopped
+
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${MONGO_ROOT_USERNAME:?Identifiant MongoDB manquant}"
+      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_ROOT_PASSWORD:?Mot de passe MongoDB manquant}"
+
+    volumes:
+      - mongo_data:/data/db
+
+    networks:
+      - ai_jobs_network
+
+    healthcheck:
+      test:
+        - CMD
+        - mongosh
+        - --quiet
+        - --eval
+        - "if (db.adminCommand({ ping: 1 }).ok !== 1) quit(1)"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+volumes:
+  mongo_data:
+
+networks:
+  ai_jobs_network:
+    driver: bridge

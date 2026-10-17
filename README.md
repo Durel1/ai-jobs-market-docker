@@ -42,3 +42,45 @@ la reproductibilité des traitements.
 
 Le choix de MongoDB, la structure des documents et la stratégie
 d'import sont décrits dans [database/modele.md](database/modele.md).
+
+## Démarrer MongoDB
+
+Prérequis : Docker Desktop démarré en mode conteneurs Linux,
+avec Docker Compose disponible.
+
+1. Copier `.env.example` vers `.env`.
+2. Définir un mot de passe local dans `.env`.
+3. Valider la configuration :
+
+```bash
+docker compose config --quiet
+```
+
+4. Démarrer MongoDB et vérifier son état :
+
+```bash
+docker compose up -d
+docker compose ps
+```
+
+Le service mongodb doit passer à l'état healthy.
+
+L'image configurée est mongo:8.0.
+Version observée lors du premier test : MongoDB 8.0.34.
+
+Les données sont stockées dans le volume nommé mongo_data,
+préfixé par le nom du projet Docker Compose.
+
+Les identifiants d'initialisation sont appliqués uniquement lorsque
+le répertoire de données est vide. Modifier `.env` ne change pas
+le mot de passe d'un utilisateur déjà créé.
+
+## Arrêter les services
+
+```bash
+docker compose down
+```
+
+Cette commande conserve le volume de données.
+L'option `-v` supprime les volumes et leurs données ; elle n'est pas
+utilisée pour un arrêt normal.
