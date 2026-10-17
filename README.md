@@ -84,3 +84,32 @@ docker compose down
 Cette commande conserve le volume de données.
 L'option `-v` supprime les volumes et leurs données ; elle n'est pas
 utilisée pour un arrêt normal.
+
+## Importer les données
+
+L'import est exécuté dans un conteneur Python temporaire.
+Il prépare les données depuis le CSV original, puis les charge dans MongoDB.
+
+Premier lancement ou après modification des scripts :
+
+```bash
+docker compose --profile tools run --rm --build import-data
+```
+
+Relancer l'import sans modification des sources :
+
+```bash
+docker compose --profile tools run --rm import-data
+```
+
+Le service attend que MongoDB soit disponible et utilise le compte
+ai_jobs_importer.
+
+Chaque offre est identifiée par son job_id, également utilisé comme _id.
+Un réimport du même dataset ne crée aucun doublon et ne modifie pas
+les documents identiques.
+
+Le script relit les documents importés et compare leur contenu aux
+données préparées.
+
+L'import ne supprime pas les documents absents du fichier source.

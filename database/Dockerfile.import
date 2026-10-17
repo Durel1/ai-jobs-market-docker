@@ -1,0 +1,16 @@
+FROM python:3.13-slim
+
+WORKDIR /projet
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+COPY database/requirements-import.txt database/requirements-import.txt
+
+RUN pip install --no-cache-dir -r database/requirements-import.txt
+
+COPY scripts/preparer_donnees.py scripts/preparer_donnees.py
+COPY database/importer_donnees.py database/importer_donnees.py
+COPY data/ai_jobs_market_2025_2026.csv data/ai_jobs_market_2025_2026.csv
+
+CMD ["sh", "-c", "python scripts/preparer_donnees.py && python database/importer_donnees.py"]

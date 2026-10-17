@@ -32,6 +32,29 @@ services:
       retries: 10
       start_period: 20s
 
+  import-data:
+    build:
+      context: .
+      dockerfile: database/Dockerfile.import
+
+    profiles:
+      - tools
+
+    restart: "no"
+
+    environment:
+      MONGO_HOST: mongodb
+      MONGO_DATABASE: ai_jobs
+      MONGO_USERNAME: "${MONGO_IMPORT_USERNAME:?Compte import manquant}"
+      MONGO_PASSWORD: "${MONGO_IMPORT_PASSWORD:?Mot de passe import manquant}"
+
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+    networks:
+      - ai_jobs_network
+
 volumes:
   mongo_data:
 
