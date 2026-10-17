@@ -161,3 +161,26 @@ l'application affiche un message d'indisponibilité des données.
 Après docker compose start mongodb et actualisation de la page,
 les 1 500 offres et les indicateurs réapparaissent sans réimport
 ni reconstruction d'image.
+
+## Reconstruction dans un environnement isolé
+
+Projet Compose utilisé : ai-jobs-validation.
+
+Procédure :
+1. Arrêt de l'application habituelle pour libérer le port 8501.
+2. Construction des deux images avec --no-cache.
+3. Démarrage de MongoDB avec un nouveau volume.
+4. Exécution de l'import.
+5. Démarrage de Streamlit.
+
+Résultats observés :
+- Nouveau réseau et nouveau volume créés.
+- Initialisation automatique permettant l'accès au compte d'import.
+- 1 500 documents insérés et vérifiés.
+- MongoDB et Streamlit en état healthy.
+
+Les conteneurs de validation ont ensuite été supprimés sans suppression
+du volume, puis l'application habituelle a été redémarrée.
+
+Ce test utilise une installation Docker existante et des ressources
+Compose isolées ; il ne simule pas une réinstallation de Docker.

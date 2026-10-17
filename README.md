@@ -1,134 +1,196 @@
 # AI Jobs Market 2025–2026
 
-Projet de cours de virtualisation et conteneurisation — 4A.
+Projet de virtualisation et conteneurisation — 4A.
 
-## Objectif
+Application Web d'analyse d'offres d'emploi en intelligence artificielle,
+déployée avec Docker Compose.
 
-Créer une application Streamlit d’analyse des offres d’emploi en IA,
-connectée à une base MongoDB ou MySQL et déployée avec Docker Compose.
+## Fonctionnalités
 
-## Technologies
+- Quatre indicateurs : nombre d'offres, salaires moyen et médian,
+  score moyen de demande.
+- Cinq filtres : pays, expérience, secteur, mode de travail et métier.
+- Cinq graphiques : salaires par métier, pays et expérience,
+  répartition du télétravail et compétences fréquentes.
+- Comparaison des salaires LLM à pays et niveau déclaré comparables.
+- Analyse de sensibilité aux incohérences salariales.
+- Gestion des sélections vides et des erreurs de connexion.
 
-- Python
-- Streamlit
-- MongoDB — stockage des offres et de leurs compétences
-- Docker et Docker Compose
-- Git
+## Prérequis
 
-## Avancement
+- Docker Desktop démarré en mode conteneurs Linux.
+- Docker Compose disponible.
+- Connexion Internet pour télécharger les images et les dépendances.
+- Port local 8501 disponible.
 
-- [x] Vérification de Docker, Docker Compose et Python
-- [x] Initialisation du suivi Git
-- [ ] Analyse et préparation des données
-- [ ] Conception de la base
-- [ ] Import des données
-- [ ] Développement de l’application
-- [ ] Conteneurisation et orchestration
-- [ ] Dashboard et analyses
-- [ ] Tests et documentation
+Python et MongoDB ne sont pas nécessaires sur la machine hôte
+pour exécuter le projet.
 
-## Organisation du projet
+## Architecture
 
-- data/ : dataset original et éventuelles données nettoyées.
-- app/ : application Streamlit et configuration de son image Docker.
-- scripts/ : analyse et préparation des données.
-- database/ : initialisation et import en base de données.
-- rapport/ : notes, preuves de tests et rapport final.
+| Service | Rôle | Fonctionnement |
+|---|---|---|
+| mongodb | Stockage des offres | Service permanent |
+| app | Interface Streamlit | Service permanent |
+| import-data | Préparation et import | Conteneur temporaire |
 
-Le CSV original est conservé sans modification afin de garantir
-la reproductibilité des traitements.
+Les services communiquent par le réseau Docker ai_jobs_network.
+L'application contacte la base avec le nom de service mongodb.
 
-## Modèle de données
+Le volume mongo_data conserve les données.
+Seul le port Web est publié, sur 127.0.0.1:8501.
 
-Le choix de MongoDB, la structure des documents et la stratégie
-d'import sont décrits dans [database/modele.md](database/modele.md).
+## Premier lancement
 
-## Démarrer MongoDB
+Exécuter les commandes depuis le dossier contenant compose.yaml.
 
-Prérequis : Docker Desktop démarré en mode conteneurs Linux,
-avec Docker Compose disponible.
-
-1. Copier `.env.example` vers `.env`.
-2. Définir un mot de passe local dans `.env`.
+1. Copier .env.example vers .env.
+2. Remplacer les trois mots de passe d'exemple dans .env.
 3. Valider la configuration :
 
 ```bash
 docker compose config --quiet
 ```
 
-4. Démarrer MongoDB et vérifier son état :
+4. Démarrer MongoDB :
 
 ```bash
-docker compose up -d
-docker compose ps
+docker compose up -d mongodb
 ```
 
-Le service mongodb doit passer à l'état healthy.
-
-L'image configurée est mongo:8.0.
-Version observée lors du premier test : MongoDB 8.0.34.
-
-Les données sont stockées dans le volume nommé mongo_data,
-préfixé par le nom du projet Docker Compose.
-
-Les identifiants d'initialisation sont appliqués uniquement lorsque
-le répertoire de données est vide. Modifier `.env` ne change pas
-le mot de passe d'un utilisateur déjà créé.
-
-## Arrêter les services
-
-```bash
-docker compose down
-```
-
-Cette commande conserve le volume de données.
-L'option `-v` supprime les volumes et leurs données ; elle n'est pas
-utilisée pour un arrêt normal.
-
-## Importer les données
-
-L'import est exécuté dans un conteneur Python temporaire.
-Il prépare les données depuis le CSV original, puis les charge dans MongoDB.
-
-Premier lancement ou après modification des scripts :
+5. Construire et exécuter l'import :
 
 ```bash
 docker compose --profile tools run --rm --build import-data
 ```
 
-Relancer l'import sans modification des sources :
+L'import attend que MongoDB soit disponible.
+Il doit annoncer 1 500 documents présents et conformes.
 
-```bash
-docker compose --profile tools run --rm import-data
-```
-
-Le service attend que MongoDB soit disponible et utilise le compte
-ai_jobs_importer.
-
-Chaque offre est identifiée par son job_id, également utilisé comme _id.
-Un réimport du même dataset ne crée aucun doublon et ne modifie pas
-les documents identiques.
-
-Le script relit les documents importés et compare leur contenu aux
-données préparées.
-
-L'import ne supprime pas les documents absents du fichier source.
-
-## Démarrer l'application Streamlit
-
-Après l'import des données :
+6. Construire et démarrer l'application :
 
 ```bash
 docker compose up -d --build app
 docker compose ps
 ```
 
-Ouvrir http://localhost:8501.
+7. Ouvrir http://localhost:8501.
 
-L'application utilise le compte MongoDB de lecture et affiche :
-- le nombre d'offres ;
-- le salaire annuel moyen ;
-- le salaire annuel médian ;
-- le score moyen de demande.
+Les services app et mongodb doivent passer à l'état healthy.
 
-Le bouton d'actualisation déclenche une nouvelle lecture des données.
+## Valeurs de référence sans filtre
+
+| Indicateur | Valeur |
+|---|---:|
+| Nombre d'offres | 1 500 |
+| Salaire annuel moyen | 194 892 USD |
+| Salaire annuel médian | 180 000 USD |
+| Score moyen de demande | 87,52 |
+
+## Utilisation des filtres
+
+Une sélection vide conserve toutes les valeurs.
+Plusieurs valeurs d'un même filtre sont combinées avec « ou ».
+Les différents filtres sont combinés avec « et ».
+
+Le bouton de réinitialisation efface toutes les sélections.
+
+Exemple France + Fully Remote :
+26 offres, salaire moyen de 194 938 USD et médian de 175 000 USD.
+
+## Import reproductible
+
+Le conteneur d'import prépare le CSV original, puis charge MongoDB.
+
+Pour réimporter sans modification des sources :
+
+```bash
+docker compose --profile tools run --rm import-data
+```
+
+Après modification des scripts ou du CSV, ajouter --build.
+
+Les offres sont identifiées par job_id, repris dans _id.
+Un réimport identique ne crée aucun doublon et ne modifie aucun document.
+
+L'import ne supprime pas automatiquement les offres absentes du fichier source.
+Le JSON intermédiaire est régénéré dans le conteneur temporaire.
+
+## Arrêt et redémarrage
+
+Arrêter et supprimer les conteneurs tout en conservant les données :
+
+```bash
+docker compose down
+```
+
+Redémarrer après un premier lancement réussi :
+
+```bash
+docker compose up -d
+```
+
+L'option -v de docker compose down supprime les volumes et leurs données.
+Elle ne doit pas être utilisée pour un arrêt normal.
+
+## Configuration et comptes
+
+| Compte par défaut | Rôle | Base d'authentification |
+|---|---|---|
+| ai_jobs_admin | root | admin |
+| ai_jobs_reader | read sur ai_jobs | ai_jobs |
+| ai_jobs_importer | readWrite sur ai_jobs | ai_jobs |
+
+Les identifiants sont configurés dans .env.
+Ce fichier est exclu de Git et du contexte de construction Docker.
+
+Les comptes sont créés automatiquement sur un volume vide.
+Modifier .env ne change pas les mots de passe des comptes déjà créés.
+
+## Diagnostic
+
+État des services :
+
+```bash
+docker compose ps
+```
+
+Derniers logs :
+
+```bash
+docker compose logs --tail 50 app
+docker compose logs --tail 50 mongodb
+```
+
+Si aucune offre n'est disponible, exécuter l'import.
+Si MongoDB est indisponible, vérifier son état et ses logs,
+puis actualiser les données dans l'interface.
+
+L'état healthy de Streamlit vérifie le serveur Web.
+Il ne garantit pas à lui seul l'accès à MongoDB.
+
+## Données et limites
+
+Le CSV contient 1 500 offres et 25 colonnes.
+
+La préparation :
+- convertit les types numériques et booléens ;
+- transforme les compétences en listes ;
+- retire 120 répétitions de compétences dans 119 offres ;
+- signale 288 salaires hors fourchette ;
+- signale 1 099 incohérences d'expérience.
+
+Les valeurs originales sont conservées.
+Le dataset est un support pédagogique, pas un recensement exhaustif du marché.
+Les analyses sont descriptives et ne démontrent pas de causalité.
+
+## Organisation
+
+- app/ : interface, accès aux données, filtres et analyses.
+- data/ : CSV original.
+- database/ : initialisation MongoDB et import.
+- scripts/ : exploration et préparation des données.
+- rapport/ : notes, tests, captures et rapport final.
+
+Le modèle est détaillé dans [database/modele.md](database/modele.md).
+Les tests sont documentés dans [rapport/tests.md](rapport/tests.md).
