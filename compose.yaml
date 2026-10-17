@@ -8,9 +8,14 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: "${MONGO_ROOT_USERNAME:?Identifiant MongoDB manquant}"
       MONGO_INITDB_ROOT_PASSWORD: "${MONGO_ROOT_PASSWORD:?Mot de passe MongoDB manquant}"
+      MONGO_APP_USERNAME: "${MONGO_APP_USERNAME:?Compte application manquant}"
+      MONGO_APP_PASSWORD: "${MONGO_APP_PASSWORD:?Mot de passe application manquant}"
+      MONGO_IMPORT_USERNAME: "${MONGO_IMPORT_USERNAME:?Compte import manquant}"
+      MONGO_IMPORT_PASSWORD: "${MONGO_IMPORT_PASSWORD:?Mot de passe import manquant}"
 
     volumes:
       - mongo_data:/data/db
+      - ./database/scripts_initialisation:/docker-entrypoint-initdb.d:ro
 
     networks:
       - ai_jobs_network

@@ -116,3 +116,23 @@ sans justification. Leur intérêt sera évalué selon les requêtes utilisées.
 Le dashboard interrogera MongoDB.
 Le CSV et le JSON intermédiaire serviront à la préparation et à l'import,
 pas de source principale au dashboard opérationnel.
+
+## 11. Comptes et droits d'accès
+
+| Compte | Base d'authentification | Rôle | Utilisation |
+|---|---|---|---|
+| ai_jobs_admin | admin | root | Administration |
+| ai_jobs_reader | ai_jobs | read | Dashboard Streamlit |
+| ai_jobs_importer | ai_jobs | readWrite | Import des offres |
+
+Les mots de passe sont définis dans .env, exclu de Git.
+.env.example contient uniquement des valeurs d'exemple.
+
+Le script database/scripts_initialisation/01-create-users.js crée
+les comptes absents et laisse les comptes existants inchangés.
+
+Sur un volume vide, il est exécuté automatiquement par l'image MongoDB.
+Sur un volume déjà initialisé, il peut être lancé explicitement avec
+mongosh après authentification administrateur.
+
+Modifier .env ne modifie pas les mots de passe des comptes existants.
